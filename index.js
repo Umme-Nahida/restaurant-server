@@ -37,13 +37,35 @@ async function run() {
     try{
       app.post('/user',async(req,res)=>{
         const user = req.body;
+        console.log(user)
+        const query = {userEmail: user?.userEmail}
+        const exitingUser = await userCollection.findOne(query)
+        if(exitingUser){
+          return res.send({message:"user already exite"})
+        }
         const result = await userCollection.insertOne(user)
         res.send(result)
       })
     }catch(err){
       console.log(err)
     }
+    // delete user api
+    app.delete('/userDelete/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query= {_id: new ObjectId(id)}
+      const result = await userCollection.deleteOne(query);
+      res.send(result)
+    })
 
+    // get all users
+    try{
+      app.get("/allusers",async(req,res)=>{
+         const result = await userCollection.find().toArray()
+         res.send(result)
+      })
+    }catch(err){
+      console.log(err)
+    }
     try{
       app.post('/carts',async(req,res)=>{
         const item = req.body;
