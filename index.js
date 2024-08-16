@@ -1,5 +1,6 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
 const cors = require('cors')
@@ -10,6 +11,23 @@ app.use(express.json())
 app.use(cors({
   origin:["http://localhost:5173"]
 }))
+
+const varifyToken=(req,res,next)=>{
+  console.log(req.headers.authorization)
+  if(!req.headers.authorization){
+    return res.status(401).send({message:"forbidden access"})
+  }
+  const token=req.headers.authorization.split(' ')[1];
+  jwt.verify(token,process.env.secret,(err,decode)=>{
+    if(err){
+      return res.status(403).send({message:"unAuthorized access"})
+    }
+    req.validUser = decode;
+    next()
+  })
+
+
+}
 
 // connect mongodb
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ytj0kf8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -33,9 +51,18 @@ async function run() {
     const cartsCollection = bistroDB.collection("cartsCollection")
     const userCollection = bistroDB.collection("userCollection")
  
+
+    // create jwt 
+    app.post('/jwt',async(req,res)=>{
+      const user = req.body;
+      const token = jwt.sign(user,process.env.Secret,{expiresIn:'1h'})
+      res.send({token})
+    })
+
     // user collection 
     try{
       app.post('/user',async(req,res)=>{
+        console.log(req.headers)
         const user = req.body;
         console.log(user)
         const query = {userEmail: user?.userEmail}
@@ -49,7 +76,20 @@ async function run() {
     }catch(err){
       console.log(err)
     }
-    
+  //  user updated api 
+  app.patch('/user/admin/:id',async(req,res)=>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)};
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: {
+        role:"admin"
+      },
+    };
+    const result = await userCollection.updateOne(query,updateDoc,options)
+    res.send(result)
+  })
+
     // delete user api
    try{
     app.delete('/userDelete/:id',async(req,res)=>{
@@ -64,7 +104,8 @@ async function run() {
 
     // get all users
     try{
-      app.get("/allusers",async(req,res)=>{
+      app.get("/allusers",varifyToken, async(req,res)=>{
+        console.log(req.validUser)
          const result = await userCollection.find().toArray()
          res.send(result)
       })
