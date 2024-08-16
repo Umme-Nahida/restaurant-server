@@ -34,7 +34,15 @@ async function run() {
     const userCollection = bistroDB.collection("userCollection")
  
     // user collection 
-    
+    try{
+      app.post('/user',async(req,res)=>{
+        const user = req.body;
+        const result = await userCollection.insertOne(user)
+        res.send(result)
+      })
+    }catch(err){
+      console.log(err)
+    }
 
     try{
       app.post('/carts',async(req,res)=>{
