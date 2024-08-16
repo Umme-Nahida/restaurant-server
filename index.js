@@ -49,13 +49,18 @@ async function run() {
     }catch(err){
       console.log(err)
     }
+    
     // delete user api
+   try{
     app.delete('/userDelete/:id',async(req,res)=>{
       const id = req.params.id;
       const query= {_id: new ObjectId(id)}
       const result = await userCollection.deleteOne(query);
       res.send(result)
     })
+   }catch(err){
+    console.log(err)
+   }
 
     // get all users
     try{
