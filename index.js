@@ -13,7 +13,7 @@ app.use(cors({
 }))
 
 const varifyToken=(req,res,next)=>{
-  console.log(req.headers.authorization)
+  // console.log(req.headers.authorization)
   if(!req.headers.authorization){
     return res.status(401).send({message:"forbidden access"})
   }
@@ -22,7 +22,9 @@ const varifyToken=(req,res,next)=>{
     if(err){
       return res.status(403).send({message:"unAuthorized access"})
     }
+    // console.log("tokenErr:",err)
     req.validUser = decode;
+    req.tokenErr=err;
     next()
   })
 
@@ -52,19 +54,48 @@ async function run() {
     const userCollection = bistroDB.collection("userCollection")
  
 
+    // varify admin 
+   
+      const varifyAdmin= async(req,res,next)=>{
+        console.log("validUser",req.validUser)
+        console.log("errToken:",req.tokenErr)
+        const email = req.validUser.email;
+        const query = {userEmail: email}
+        const user = await userCollection.findOne(query)
+        const isAdmin = user.role === "admin"
+        if(!isAdmin){
+          return res.status(403).send({message: "anAuthorized access"})
+        }
+        next()
+
+      }
+  
+      // logout functionalitly
+      app.get('/logoutUser/:email',async(req,res)=>{
+        const email = req.params.email;
+        const query = {userEmail:email}
+        const user = await userCollection.findOne(query)
+        const isErr = req.tokenErr;
+        if(isErr){
+          return res.send({user:"false"})
+        }
+        return res.send(user)
+        
+      })
+
     // create jwt 
     app.post('/jwt',async(req,res)=>{
       const user = req.body;
-      const token = jwt.sign(user,process.env.Secret,{expiresIn:'1h'})
+      const token = jwt.sign(user,process.env.Secret,{expiresIn:'9h'})
       res.send({token})
     })
 
-    // user collection 
+    // user is exite or not exite api 
     try{
       app.post('/user',async(req,res)=>{
         console.log(req.headers)
         const user = req.body;
-        console.log(user)
+        // console.log(user)
         const query = {userEmail: user?.userEmail}
         const exitingUser = await userCollection.findOne(query)
         if(exitingUser){
@@ -76,8 +107,21 @@ async function run() {
     }catch(err){
       console.log(err)
     }
+
+    //check is isAdmin or not 
+    app.get('/user/isAdmin/:email',varifyToken,varifyAdmin,async(req,res)=>{
+      const email = req.params.email;
+      const query = {userEmail:email}
+      const user = await userCollection.findOne(query);
+      const isAdmin = user.role === 'admin'
+      if(isAdmin){
+        return res.send({user})
+      }
+      return res.send({admin:"false"})
+    })
+
   //  user updated api 
-  app.patch('/user/admin/:id',async(req,res)=>{
+  app.patch('/user/admin/:id',varifyToken,varifyAdmin, async(req,res)=>{
     const id = req.params.id;
     const query = {_id: new ObjectId(id)};
     const options = { upsert: true };
@@ -105,7 +149,8 @@ async function run() {
     // get all users
     try{
       app.get("/allusers",varifyToken, async(req,res)=>{
-        console.log(req.validUser)
+        // console.log("validUser",req.validUser)
+        console.log("errToken",req.tokenErr)
          const result = await userCollection.find().toArray()
          res.send(result)
       })
@@ -149,12 +194,23 @@ async function run() {
 
     // get menu items 
     try{
-        app.get("/menu",async(req,res)=>{
+        app.get("/menu", async(req,res)=>{
             const result = await menuCollection.find().toArray()
             res.send(result);
            })
     }catch(err){
         console.log(err)
+    }
+
+    // post food item in mongodb
+    try{
+      app.post("/menuAdd",varifyToken,varifyAdmin, async(req,res)=>{
+        const item = req.body;
+        const result = await menuCollection.insertOne(item)
+        res.send(result)
+      })
+    }catch(err){
+      console.log(err)
     }
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
