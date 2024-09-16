@@ -86,7 +86,7 @@ async function run() {
     // create jwt 
     app.post('/jwt',async(req,res)=>{
       const user = req.body;
-      const token = jwt.sign(user,process.env.Secret,{expiresIn:'9h'})
+      const token = jwt.sign(user,process.env.Secret,{expiresIn:'365d'})
       res.send({token})
     })
 
@@ -107,6 +107,18 @@ async function run() {
     }catch(err){
       console.log(err)
     }
+
+  // get user role 
+  try{
+    app.get('/getUserRole/:email',async(req,res)=>{
+        const email = req.params.email;
+        const query = {userEmail: email}
+        const result = await userCollection.findOne(query)
+        res.send(result)
+    })
+  }catch(err){
+    console.log(err)
+  }
 
     //check is isAdmin or not 
     app.get('/user/isAdmin/:email',varifyToken,varifyAdmin,async(req,res)=>{
@@ -157,6 +169,8 @@ async function run() {
     }catch(err){
       console.log(err)
     }
+
+    // save cart item to the db
     try{
       app.post('/carts',async(req,res)=>{
         const item = req.body;
@@ -180,6 +194,7 @@ async function run() {
       console.log(err)
     }
 
+    // delete cart from shop page 
    try{
     app.delete('/deleteCart/:id',async(req,res)=>{
       const id = req.params.id;
