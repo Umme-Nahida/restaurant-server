@@ -1,10 +1,10 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const stripe = require('stripe')('sk_test_51OZHgME5jTTsl0NgK4jroDpZyHxSvMHxzDsdVDozHIIPyHAwHRSKY2f8Xb1dtWSY1zy5lGZ1UhbPNhod2CYbJURE003eOg8yhY')
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
 const cors = require('cors')
+const stripe = require('stripe')(process.env.paymentsk)
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -31,6 +31,7 @@ const varifyToken=(req,res,next)=>{
 
 
 }
+console.log('Stripe Secret Key:', process.env.paymentsk);
 
 // connect mongodb
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ytj0kf8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
