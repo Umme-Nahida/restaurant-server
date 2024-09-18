@@ -31,7 +31,7 @@ const varifyToken=(req,res,next)=>{
 
 
 }
-console.log('Stripe Secret Key:', process.env.paymentsk);
+// console.log('Stripe Secret Key:', process.env.paymentsk);
 
 // connect mongodb
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ytj0kf8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -54,13 +54,14 @@ async function run() {
     const menuCollection = bistroDB.collection("menuCollection")
     const cartsCollection = bistroDB.collection("cartsCollection")
     const userCollection = bistroDB.collection("userCollection")
+    const paymentCollection = bistroDB.collection("paymentCollection")
  
 
     // varify admin 
    
       const varifyAdmin= async(req,res,next)=>{
         console.log("validUser",req.validUser)
-        console.log("errToken:",req.tokenErr)
+        // console.log("errToken:",req.tokenErr)
         const email = req.validUser.email;
         const query = {userEmail: email}
         const user = await userCollection.findOne(query)
@@ -112,6 +113,30 @@ async function run() {
     }catch(err){
       console.log(err)
     }
+
+    // save payment 
+    try{
+     app.post('/payment',async(req,res)=>{
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment)
+
+      console.log('payment',payment)
+      // delete cart payment
+      const query = {_id: {
+          $in: payment.menuId.map(id => (id)) // Ensure ObjectId is instantiated properly
+        }
+      };
+      
+      const deleteResult = await cartsCollection.deleteMany(query)
+      res.send({paymentResult,deleteResult})
+     })
+    }catch(err){
+      console.log(err)
+    }
+
+
+    // get payment all data
+    
 
     // user is exite or not exite api 
     try{
