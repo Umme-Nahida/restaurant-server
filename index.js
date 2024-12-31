@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
 const cors = require('cors')
-const stripe = require('stripe')(process.env.paymentsk)
+const stripe = require('stripe')('sk_test_51OZHgME5jTTsl0NgK4jroDpZyHxSvMHxzDsdVDozHIIPyHAwHRSKY2f8Xb1dtWSY1zy5lGZ1UhbPNhod2CYbJURE003eOg8yhY')
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -172,7 +172,7 @@ async function run() {
   }
 
     //check is isAdmin or not 
-    app.get('/user/isAdmin/:email',varifyToken,varifyAdmin,async(req,res)=>{
+    app.get('/user/isAdmin/:email',varifyToken,async(req,res)=>{
       const email = req.params.email;
       const query = {userEmail:email}
       const user = await userCollection.findOne(query);
