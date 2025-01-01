@@ -55,6 +55,7 @@ async function run() {
     const cartsCollection = bistroDB.collection("cartsCollection")
     const userCollection = bistroDB.collection("userCollection")
     const paymentCollection = bistroDB.collection("paymentCollection")
+    const bookingCollection = bistroDB.collection("bookingCollection")
  
 
     // varify admin 
@@ -96,9 +97,9 @@ async function run() {
     try{
      app.post('/create-payment-intent',async(req,res)=>{
       const {price} = req.body;
-      console.log(price)
+      // console.log(price)
       const amount = parseInt(price * 100)
-      console.log('this amoun',amount)
+      // console.log('this amoun',amount)
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -281,6 +282,12 @@ async function run() {
 
 
     //booking api added here 
+    app.post('/booking',async(req,res)=>{
+      const booking = req.body;
+      console.log(booking)
+      const result = await bookingCollection.insertOne(booking)
+      res.send(result)
+    })
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
