@@ -136,7 +136,10 @@ async function run() {
 
 
     // get payment all data
-    
+    app.get('/getAllPayment',async(req,res)=>{
+       const result = await paymentCollection.find().toArray()
+       res.send(result)
+    })
 
     // user is exite or not exite api 
     try{
