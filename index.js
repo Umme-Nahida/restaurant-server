@@ -289,6 +289,24 @@ async function run() {
       const result = await bookingCollection.insertOne(booking)
       res.send(result)
     })
+
+
+    // get all booking 
+    app.get('/getBooking',async(req,res)=>{
+      const result = await bookingCollection.find().toArray()
+      res.send(result)
+    })
+
+    // get all bookings for spacific user
+    app.get('/userBookings/:email',async(req,res)=>{
+       const email = req.params.email;
+       console.log(email)
+       const query = {email:email}
+       const result = await bookingCollection.find(query).toArray()
+       res.send(result)
+    })
+
+
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
