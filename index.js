@@ -56,6 +56,7 @@ async function run() {
     const userCollection = bistroDB.collection("userCollection")
     const paymentCollection = bistroDB.collection("paymentCollection")
     const bookingCollection = bistroDB.collection("bookingCollection")
+    const reviewCollection = bistroDB.collection("reviewCollection")
  
 
     // varify admin 
@@ -308,8 +309,18 @@ async function run() {
 
 
     // create all api for review 
+    try{
+      app.post('/addReview',async(req,res)=>{
+        const review = req.body;
+        const result = await reviewCollection.insertOne(review)
+        res.send(result)
+      })
+  
+    }catch(err){
+      console.log(err)
+    }
 
-
+    
 
 
 
