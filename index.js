@@ -320,7 +320,18 @@ async function run() {
       console.log(err)
     }
 
-    
+    // get all review in mongodb
+    try{
+      app.get('/getAllReview',async(req,res)=>{
+        const result = await reviewCollection.find().toArray();
+        res.send(result)
+      })
+    }catch(err){
+      console.log(err)
+    }
+
+
+
 
 
 
