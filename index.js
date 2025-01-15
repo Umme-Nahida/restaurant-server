@@ -331,6 +331,19 @@ async function run() {
     }
 
 
+    //get my all review from mongodb
+    try{
+      app.get('/myReview',async(req,res)=>{
+        const email = req.params.email;
+        const query = {email:email}
+        const result = await reviewCollection.find(query).toArray()
+        res.send(result)
+      })
+    }catch(err){
+      console.log(err)
+    }
+
+
 
 
 
