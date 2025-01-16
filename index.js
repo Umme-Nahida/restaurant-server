@@ -359,6 +359,27 @@ async function run() {
        res.send(result)
     })
 
+    // update booking status by admin
+    try{
+      app.patch('/updateStatus/:id',async(req,res)=>{
+        const id = req.params.id;
+        const status = req.body;
+        const query = {_id: new ObjectId(id)}
+        const option = {upsert:true}
+        const updateDoc ={
+          $set:{
+            status: status.status
+          }
+        }
+
+        const result = await bookingCollection.updateOne(query,updateDoc,option)
+        res.send(result)
+
+      })
+    }catch(err){
+      console.log(err)
+    }
+
 
     // create all api for review 
     try{
