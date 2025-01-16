@@ -144,6 +144,19 @@ async function run() {
     })
 
 
+  //  get user State
+  try{
+    app.get('/userStats/:email',async(req,res)=>{
+      const email = req.params.email
+      const totalOrder = await paymentCollection.countDocuments({email:email})
+      const review = await reviewCollection.countDocuments({email:email})
+      const booking = await bookingCollection.countDocuments({email:email})
+      res.send({totalOrder,review,booking})
+    })
+  }catch(err){
+    console.log(err)
+  }
+
      // get admin stats
      try {
       app.get('/adminStats', async (req, res) => {
@@ -165,11 +178,10 @@ async function run() {
     
           const totalRevenue = salesStats[0]?.totalRevenue || 0;
           const revenueInt = totalRevenue.toFixed(2);
+          const totalSales = salesStats[0].totalSales || 0;
     
-          console.log("Total Revenue:", totalRevenue);
-          console.log("Total Sales:", salesStats[0]?.totalSales || 0);
     
-          res.send({ users, products, orders, totalRevenue, revenueInt });
+          res.send({ users, products, orders, totalSales, revenueInt });
         } catch (err) {
           console.error("Error fetching admin stats:", err);
           res.status(500).send({ error: "Internal Server Error" });
