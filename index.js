@@ -143,10 +143,47 @@ async function run() {
        res.send(result)
     })
 
+
+     // get admin stats
+     try {
+      app.get('/adminStats', async (req, res) => {
+        try {
+          // Aggregation queries
+          const users = await userCollection.countDocuments();
+          const products = await menuCollection.countDocuments();
+          const orders = await paymentCollection.countDocuments();
+    
+          const salesStats = await paymentCollection.aggregate([
+            {
+              $group: {
+                _id: null,
+                totalRevenue: { $sum: "$price" },
+                totalSales: { $sum: 1 },
+              },
+            },
+          ]).toArray();
+    
+          const totalRevenue = salesStats[0]?.totalRevenue || 0;
+          const revenueInt = totalRevenue.toFixed(2);
+    
+          console.log("Total Revenue:", totalRevenue);
+          console.log("Total Sales:", salesStats[0]?.totalSales || 0);
+    
+          res.send({ users, products, orders, totalRevenue, revenueInt });
+        } catch (err) {
+          console.error("Error fetching admin stats:", err);
+          res.status(500).send({ error: "Internal Server Error" });
+        }
+      });
+    } catch (err) {
+      console.error("Error in route setup:", err);
+    }
+    
+
     // user is exite or not exite api 
     try{
       app.post('/user',async(req,res)=>{
-        console.log(req.headers)
+        // console.log(req.headers)
         const user = req.body;
         // console.log(user)
         const query = {userEmail: user?.userEmail}
@@ -160,6 +197,9 @@ async function run() {
     }catch(err){
       console.log(err)
     }
+
+
+   
 
   // get user role 
   try{
@@ -344,12 +384,6 @@ async function run() {
     }
 
 
-
-
-
-
-
-    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
