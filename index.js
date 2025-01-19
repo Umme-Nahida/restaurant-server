@@ -333,6 +333,20 @@ async function run() {
       console.log(err)
     }
 
+    // deleted menu item
+    try{
+     app.delete('/deleteMenu',async(req,res)=>{
+      const id = req.params.id;
+      const query= {_id: new ObjectId(id)}
+      const result = await menuCollection.deleteOne(query)
+      res.send(result)
+     })
+    }catch(err){
+      console.log(err)
+    }
+
+    
+
 
     //booking api added here 
     app.post('/booking',async(req,res)=>{
