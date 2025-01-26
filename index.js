@@ -266,7 +266,7 @@ async function run() {
 
     // get all users
     try {
-      app.get("/allusers", varifyToken, async (req, res) => {
+      app.get("/allusers",  async (req, res) => {
         // console.log("validUser",req.validUser)
         console.log("errToken", req.tokenErr)
         const result = await userCollection.find().toArray()
